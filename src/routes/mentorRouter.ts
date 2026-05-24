@@ -120,34 +120,51 @@ mentorRouter.post("/search",authMiddleware,async(req,res)=>{
   }
 );
 
-mentorRouter.get(`/:id`,authMiddleware,async(req,res)=>{
+mentorRouter.get(
+  "/meetings/:id",
+  authMiddleware,
+  async (req, res) => {
+
     try {
 
-        const mentorID = req.params.id ;
-        const mentorPara = mentorID.split("=")[1];
-        console.log("her",mentorID);
-        const user = await prisma.mentor.findUnique({
-        where:{
-            id:mentorPara 
-        }
-        })
-        if(!user){
-        return res.status(400).json({message:"No mentor found"});
-        }
-        else{
-        return res.json({message:user})
-        }
-    } 
-    catch (error) {
-     console.log(error);   
-     res.status(403).json({message:"No mentor found",error:error})
-    }
-    finally{
-        prisma.$disconnect();
-    }
-})
+      const mentorId = req.params.id;
 
+      console.log("mentor id", mentorId);
 
+      const mentor = await prisma.mentor.findUnique({
+        where: {
+          id: mentorId,
+        },
+
+        include: {
+          meetings: {
+            orderBy: {
+              scheduledAt: "desc",
+            },
+          },
+        },
+      });
+
+      if (!mentor) {
+        return res.status(404).json({
+          message: "No mentor found",
+        });
+      }
+
+      return res.json({
+        meetings: mentor.meetings,
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      return res.status(500).json({
+        message: "Failed to fetch meetings",
+      });
+    }
+  }
+);
 
 
 

@@ -274,7 +274,7 @@ userRouter.post(
 );
 
 userRouter.get(
-  "/meetings",
+  "/meetings/:id",
   authMiddleware,
   async (req: CustomRequest, res) => {
 
