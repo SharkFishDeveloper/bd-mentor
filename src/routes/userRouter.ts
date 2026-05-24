@@ -33,7 +33,7 @@ userRouter.post("/login",async(req,res)=>{
         return res.json({message:"Invalid password"})
     }else{
         const token = await jwt.sign(user.id,JWT_SECRET_KEY);
-        res.cookie('token',token,{httpOnly:true,secure:true,sameSite:true,maxAge:3600000})
+        res.cookie('token',token,{httpOnly:true,secure:true,sameSite:"none",maxAge:3600000})
         return res.json({message:"Logged in successfully !!",user:user})
 
     }
@@ -62,7 +62,7 @@ userRouter.post("/signup",async(req,res)=>{
             data:{username,password:cryptedPassword,email},
         })
         const token = await jwt.sign(user.id,JWT_SECRET_KEY);
-        res.cookie('token',token,{httpOnly:true,secure:true,sameSite:true,maxAge:3600000})
+        res.cookie('token',token,{httpOnly:true,secure:true,sameSite:"none",maxAge:3600000})
         return res.json({message:"Success, signup",user:user})
     } catch (error) {
         console.log("error in db",error);
