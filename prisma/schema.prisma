@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  email String @unique
+  password String 
+  username String @unique
+  imageUrl String?
+  roomId String[]
+  mentorName String[]
+  reviews     Review[]
+  meetings Meeting[]
+}
+
+model Mentor {
+  id String @id @default(uuid())
+  email String @unique
+  password String 
+  username String
+  about String @default("")
+  university String @default("")
+  specializations String[] 
+  rating Float @default(0)
+  userMentored Int @default(0)
+  mentoredId String[]
+  imageUrl String?
+  popularity Int @default(0)
+  timeslots Int[]
+  usersName String[]
+  roomId String[]
+  price Int @default(0)
+  reviews         Review[]
+  meetings Meeting[]
+}
+model Meeting {
+  id            String   @id @default(uuid())
+
+  roomId        String   @unique
+
+  mentorId      String
+  userId        String
+
+  mentorName    String
+  userName      String
+
+  scheduledAt   DateTime
+
+  status        String   @default("upcoming")
+  // upcoming | completed | cancelled
+
+  createdAt     DateTime @default(now())
+
+  mentor        Mentor   @relation(fields: [mentorId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model Review {
+  id          String   @id @default(uuid())
+
+  rating      Int
+  comment     String
+
+  createdAt   DateTime @default(now())
+
+  userId      String
+  mentorId    String
+
+  user         User    @relation(fields: [userId], references: [id])
+  mentor       Mentor  @relation(fields: [mentorId], references: [id])
+
+  @@unique([userId, mentorId]) // one review per user per mentor
+}
