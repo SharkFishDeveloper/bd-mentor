@@ -209,6 +209,51 @@ mentorRouter.put("/update",authMentorMiddleware,async(req:CustomRequest,res)=>{
     }
 })
 
+
+mentorRouter.get(
+  "/reviews/:mentorId",
+  authMiddleware,
+  async (req, res) => {
+
+    try {
+
+      const { mentorId } = req.params;
+
+      const reviews = await prisma.review.findMany({
+        where: {
+          mentorId,
+        },
+
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              imageUrl: true,
+            },
+          },
+        },
+
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      return res.json({
+        reviews,
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      return res.status(500).json({
+        message: "Failed to fetch reviews",
+      });
+    }
+  }
+);
+
 mentorRouter.post(
   "/review/:mentorId",
   authMiddleware,
@@ -248,26 +293,43 @@ mentorRouter.post(
       }
 
       // CREATE OR UPDATE REVIEW
-      const review = await prisma.review.upsert({
-        where: {
-          userId_mentorId: {
-            userId,
-            mentorId,
-          },
-        },
+     await prisma.review.upsert({
+  where: {
+    userId_mentorId: {
+      userId,
+      mentorId,
+    },
+  },
 
-        update: {
-          rating,
-          comment,
-        },
+  update: {
+    rating,
+    comment,
+  },
 
-        create: {
-          rating,
-          comment,
-          userId,
-          mentorId,
-        },
-      });
+  create: {
+    rating,
+    comment,
+    userId,
+    mentorId,
+  },
+});
+
+const review = await prisma.review.findFirst({
+  where: {
+    userId,
+    mentorId,
+  },
+
+  include: {
+    user: {
+      select: {
+        id: true,
+        username: true,
+        imageUrl: true,
+      },
+    },
+  },
+});
 
       // RECALCULATE AVG RATING
       const allReviews = await prisma.review.findMany({
